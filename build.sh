@@ -51,11 +51,18 @@ if [ "${NO_INSTALL:-}" = "" ]; then
   DEST="/Applications"
   [ -w "$DEST" ] || DEST="$HOME/Applications"
   mkdir -p "$DEST"
-  pkill -x Pupka 2>/dev/null || true
-  sleep 0.5
+  WAS_OPEN=""
+  if pgrep -x Pupka >/dev/null; then
+    WAS_OPEN=1
+    notifyutil -p fun.gzowo.pupka.quit
+    for i in $(seq 1 30); do pgrep -x Pupka >/dev/null || break; sleep 0.2; done
+    pkill -x Pupka 2>/dev/null || true
+    sleep 0.5
+  fi
   rm -rf "$DEST/Pupka.app"
   ditto "$APP" "$DEST/Pupka.app"
   echo "installed: $DEST/Pupka.app"
+  [ -n "$WAS_OPEN" ] && open -a "$DEST/Pupka.app" && echo "reopened"
 else
   echo "built: $APP"
 fi

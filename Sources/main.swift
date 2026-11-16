@@ -1,6 +1,7 @@
 // Pupka for macOS - one opaque window with the Pupka web app served from the bundle, Polish menus, printing, clean shutdown.
 import AppKit
 import WebKit
+import notify
 
 let ivory = NSColor(srgbRed: 245 / 255, green: 244 / 255, blue: 238 / 255, alpha: 1)
 
@@ -12,6 +13,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
     private lazy var scheme = SchemeHandler(store: store, model: model)
     private lazy var bridge = Bridge(store: store, model: model)
     private var quitting = false
+    private var quitToken: Int32 = 0
     private var debug: DebugHooks?
 
     func applicationDidFinishLaunching(_ note: Notification) {
@@ -53,6 +55,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
         NSApp.activate(ignoringOtherApps: true)
 
         web.load(URLRequest(url: URL(string: "pupka://app/index.html")!))
+        notify_register_dispatch("fun.gzowo.pupka.quit", &quitToken, DispatchQueue.main) { _ in NSApp.terminate(nil) }
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
